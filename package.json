@@ -1,0 +1,23 @@
+{
+  "name": "backend-project",
+  "version": "1.0.0",
+  "description": "a backend project",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kirtanhu/backend-project.git"
+  },
+  "keywords": [
+    "javascript",
+    "backend"
+  ],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/kirtanhu/backend-project/issues"
+  },
+  "homepage": "https://github.com/kirtanhu/backend-project#readme"
+}
