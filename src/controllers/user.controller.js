@@ -50,7 +50,7 @@ const existedUser= User.findOne({
 const user = await  User.create({
     fullname, 
     avatar : avatar.url,
-    coverImage: coverImage?url || "",
+    coverImage: coverImage?.url || "",
     email,
     password,
     username:username.toLowerCase()
