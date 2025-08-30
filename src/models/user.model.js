@@ -67,7 +67,7 @@ userSchema.methods.isPasswordCorrect = async function
 userSchema.methods.generateAccessToken =function (){
     return jwt.sign(
         {
-            _id: this._id,//its from mongodb
+            _id:this._id,//its from mongodb
              email: this.email,
              username: this.username,
              fullname: this.fullname
@@ -83,7 +83,7 @@ userSchema.methods.generateAccessToken =function (){
 userSchema.methods.generateRefreshToken =function (){
     return jwt.sign(
         {
-            _id: this._id,//its from mongodb
+            _id:this._id,//its from mongodb
             
 
         },
