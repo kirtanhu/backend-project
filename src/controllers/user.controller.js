@@ -5,6 +5,7 @@ import {uploadOnCloudinary} from "../utils/cloudinary.js"
 import { ApiResponse } from "../utils/ApiResponse.js"
 import jwt from "jsonwebtoken"
 import { upload } from "../middlewares/multer.middleware.js"
+import mongoose from "mongoose"
 
 
 const generateAccessAndRefereshToken = async (userId) =>{
@@ -312,6 +313,142 @@ const updateUsercoverImage = asynchandler( async( req ,res )=> {
   ))
 })
 
+const getUserChannelProfile  = asynchandler( async (req ,res)=>{
+  const {username} = req.params
+
+  if(!username?.trim()){
+    throw new ApiError(400,"username is missing")
+  }
+//cnsole log of channel
+ const channel = await User.aggregate([
+    {
+      $match:{
+        username: username.toLowerCase()
+      }
+    },
+    {
+      //yaha mere sre channel doc aa gaye mere channel ke  likin 
+      //abhi count nahi kiya 
+      $lookup:{
+        from :"subscriptions",
+        localField:"_id",
+        foreignField:"channel",
+        as:"subsribers"
+      }
+    },
+    {
+      $lookup:{
+        from :"subscriptions",
+        localField:"_id",
+        foreignField:"subscriber",
+        as:"subsribedto"
+      }
+    },
+    {
+      $addFields:{
+        //yaha subscriber ka cnt nahi aya 
+        subscriberCount:{
+          $size:"$subsribers"
+        },
+        channelSubscribedToCount:{
+          $size:"$subsribedto"
+        },
+        isSubcribed:{
+          $cond:{
+            if: {$in: [req.user?._id , "$subsribers.subscriber"]},
+            then: true,
+            else: false
+          }
+        }
+      }
+    },
+    {
+      $project:{
+        fullname:1,
+        username:1,
+        subscriberCount:1,
+        channelSubscribedToCount:1,
+        isSubcribed:1,
+        avatar:1,
+        coverImage:1,
+        email:1
+
+
+      }
+    }
+  ])
+  console.log(channel)
+  if(!channel?.length){
+    throw new ApiError()
+  }
+
+  return res
+  .status(200)
+  .json(
+    new ApiResponse
+    (200,
+    channel[0],
+    "user channel fetched successfully")
+  )
+
+})
+//bootcamp piplines
+const getWatchHistory = asynchandler( async (req ,res)=>{
+  const user = await User.aggregate([
+    {
+      $match:{
+        _id:new mongoose.Types.ObjectId(req.user._id)
+      }
+    },
+    {
+      $lookup:{
+        //singular ki jagah pural likhna hoga from ko
+        from:"videos",
+        localField:"watchHistory",
+        foreignField:"_id",
+        as:"watchHistory",
+        pipeline:[
+          {
+            $lookup:{
+              from:"users",
+              localField:"owner",
+              foreignField:"_id",
+              as: "owner",
+              pipeline:[
+                {//jitna bhi data jayega uper owner ke pass jaye ki owner ko kya dena he
+                  //strueture chage hojayega 
+                  $project:{
+                    fullname:1,
+                    username:1,
+                    avatar:1
+                  }
+                }
+              ]
+
+
+            }
+          },
+          {
+            $addFields:{
+              owner:{
+                //ab frontend val . lake le sakta hai value
+                 $first:"$owner"
+              }
+            }
+          }
+        ]
+      }
+    }
+  ])
+  return res
+  .status(200)
+  .json(
+    new ApiResponse(200 , user[0].watchHistory, 
+      "watch history fectch successfully "
+    )
+  )
+})
+
 export {
   registerUser,
   loginUser,
@@ -321,5 +458,6 @@ export {
   changeCurrentPassword,
   updateAccountDetail,
   updateUserAvatar,
-  updateUsercoverImage
+  updateUsercoverImage,
+  getUserChannelProfile,getWatchHistory
 }
