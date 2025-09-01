@@ -146,8 +146,8 @@ const loginUser = asynchandler(async(req , res)=> {
   await User.findOneAndReplace(
     req.user._id,
     {
-      $set:{
-        refreshToken:undefined
+      $unset:{
+        refreshToken:1 //this remover the field from documents
       }
       
     },{
