@@ -66,7 +66,7 @@ console.log(existedUser)
   }
   const avatar = await uploadOnCloudinary(avatarlocalpath);
   const coverImage = await uploadOnCloudinary(coverImagelocalpath);
-
+   console.log(avatar)
   if( !avatar){
     throw new ApiError(400 , "Avatar file is required")
   }
@@ -100,17 +100,22 @@ const loginUser = asynchandler(async(req , res)=> {
   //acess and referesh token give to user
   //serd cookie to user
   const {email , username , password } = req.body
+  console.log(email)
+  console.log(password)
   if (!(email || username)){
     throw new ApiError(400 , "username or email is required")
   }
-  const user = await User.findOne({
-    $or: [{username} , {email}]
-  })
+  const user = await User.findOne(
+  username ? { username } : { email }
+);
+  console.log(user)
+  
   if(!user){
     throw new ApiError(404)
   }
+
  const isPasswordValid=  await user.isPasswordCorrect(password)
-  
+ console.log(isPasswordValid)
  if(!isPasswordValid){
   throw new ApiError(401 , "Invalid user credentials")
  }
@@ -146,8 +151,8 @@ const loginUser = asynchandler(async(req , res)=> {
   await User.findOneAndReplace(
     req.user._id,
     {
-      $unset:{
-        refreshToken:1 //this remover the field from documents
+      $set:{
+        refreshToken: undefined //this remover the field from documents
       }
       
     },{
